@@ -318,8 +318,8 @@ const pose = frame.getViewerPose(xrRefSpace);
 			  var model = undefined;
 			  pos = pose1.transform.position
 			  quat = pose1.transform.orientation
-			  quat.x = Math.PI / 2
-			  quat.y = 1
+			  //quat.x = Math.PI / 2
+			  //quat.y = 1
 			//   label
 			  if( !includedModels.includes(imageIndex) ){
 				let posi = poseToArray(pos)
