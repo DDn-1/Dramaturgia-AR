@@ -38,7 +38,7 @@ for(let planet in planets){
 	let planetName = planets[planet]
 	let el = document.createElement('div')
 	el.id = 'qr' + planet
-	loader.load('fonts/helvetiker_bold.typeface.json', function (font) {
+	loader.load('javascript/helvetiker_bold.typeface.json', function (font) {
 	    const geometry = new THREE.TextGeometry('Hello, 3D Text!', {
 	        font: font,
 	        size: 0.1, // Tamaño del texto
