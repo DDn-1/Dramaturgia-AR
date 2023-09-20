@@ -85,8 +85,8 @@ for(let planet in planets){
 	loader.load('javascript/helvetiker_bold.typeface.json', function (font) {
 		let geometry = new THREE.TextGeometry(opcionAleatoria, {
 		font: font,
-		size: 0.1, // Tamaño del texto
-		height: 0.01, // Grosor del texto
+		size: 0.05, // Tamaño del texto
+		height: 0.005, // Grosor del texto
 		curveSegments: 12, // Segmentos de curva
 		bevelEnabled: false, // Desactivar biseles
 		});
@@ -94,6 +94,8 @@ for(let planet in planets){
 		//let geometry = new THREE.SphereGeometry( 0.05, 32, 16 );
 		//let material = new THREE.MeshStandardMaterial( {color: planetColors[planet]} );
 		sphere = new THREE.Mesh( geometry, material );
+		sphere.position.set(-2, 0, 0);
+		sphere.rotation.x = Math.PI / 2;
 		qrcodes[planetName] = (new QRCode(el, planetName))._oDrawing._elCanvas
 		createImageBitmap(qrcodes[planetName]).then(x=>{
 			bitmaps[planetName] = x
