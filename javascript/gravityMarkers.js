@@ -41,7 +41,7 @@ const verbos = [
 
 const predicados = [
     'sobre mis hombros',
-    'imágenes que en vez de rostro muestran muecas'
+    'imagenes que en vez de rostro muestran muecas'
 ]
 
 function generarOpcionAleatoria() {
