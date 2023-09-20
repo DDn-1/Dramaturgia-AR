@@ -1,4 +1,4 @@
-const loader = new FontLoader();
+const loader = new THREE.FontLoader();
 let  desktopCube, socket;
 let clock = new THREE.Clock()
 let trackableImages = new Array(9)
@@ -38,20 +38,15 @@ for(let planet in planets){
 	let planetName = planets[planet]
 	let el = document.createElement('div')
 	el.id = 'qr' + planet
-	loader.load( 'fonts/helvetiker_regular.typeface.json', function ( font ) {
-	
-		const geometry = new TextGeometry( 'Hello three.js!', {
-			font: font,
-			size: 80,
-			height: 5,
-			curveSegments: 12,
-			bevelEnabled: true,
-			bevelThickness: 10,
-			bevelSize: 8,
-			bevelOffset: 0,
-			bevelSegments: 5
-		} );
-	} );
+	loader.load('ruta-a-la-fuente.json', function (font) {
+	    const textGeometry = new THREE.TextGeometry('Hello, 3D Text!', {
+	        font: font,
+	        size: 0.1, // Tamaño del texto
+	        height: 0.01, // Grosor del texto
+	        curveSegments: 12, // Segmentos de curva
+	        bevelEnabled: false, // Desactivar biseles
+	    });
+	});
 	let material = new THREE.MeshBasicMaterial( {color: 0x00ff00} ); 
 	//let geometry = new THREE.SphereGeometry( 0.05, 32, 16 );
 	//let material = new THREE.MeshStandardMaterial( {color: planetColors[planet]} );
