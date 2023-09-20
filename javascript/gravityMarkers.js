@@ -39,8 +39,9 @@ for(let planet in planets){
 	let el = document.createElement('div')
 	el.id = 'qr' + planet
 	let geometry = new THREE.BoxGeometry( 10, 10, 10 ); 
+	let material = new THREE.MeshBasicMaterial( {color: 0x00ff00} ); 
 	//let geometry = new THREE.SphereGeometry( 0.05, 32, 16 );
-	let material = new THREE.MeshStandardMaterial( {color: planetColors[planet]} );
+	//let material = new THREE.MeshStandardMaterial( {color: planetColors[planet]} );
 	sphere = new THREE.Mesh( geometry, material );
 	//sphere = new THREE.Mesh(textGeometry, material);
 	qrcodes[planetName] = (new QRCode(el, planetName))._oDrawing._elCanvas
