@@ -1,4 +1,4 @@
-
+import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 let  desktopCube, socket;
 let clock = new THREE.Clock()
 let trackableImages = new Array(9)
