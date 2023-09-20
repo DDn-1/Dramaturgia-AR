@@ -27,19 +27,63 @@ let planetColors = [
 	0x40c0e0,
 	0x20c0fe
 ]
+const sujetos = [
+    'El pelo negro',
+    'Yo',
+    'Mi tía'
+]
+
+const verbos = [
+    'cae',
+    'hay',
+    'representó'
+]
+
+const predicados = [
+    'sobre mis hombros',
+    'imágenes que en vez de rostro muestran muecas'
+]
+
+function generarOpcionAleatoria() {
+    const sujetoAleatorio = sujetos[Math.floor(Math.random() * sujetos.length)];
+    const verboAleatorio = verbos[Math.floor(Math.random() * verbos.length)];
+    const predicadoAleatorio = predicados[Math.floor(Math.random() * predicados.length)];
+
+    const opcion = Math.floor(Math.random() * 5) + 1;
+
+    switch (opcion) {
+        case 1:
+            return `${sujetoAleatorio} ${verboAleatorio} ${predicadoAleatorio}`;
+        case 2:
+            return `${sujetoAleatorio} ${predicadoAleatorio}`;
+        case 3:
+            return `${verboAleatorio}`;
+        case 4:
+            return `${verboAleatorio} ${predicadoAleatorio}`;
+        case 5:
+            return `${sujetoAleatorio} ${verboAleatorio}`;
+    }
+}
+
 
 // masses
 let planetMasses =[]
 
 let items = {}
+let subject = new Array(3)
+let verb = new Array(3)
+let predicate = new Array(2)
 let models = new Array(9)
 let bitmaps = {}
+
+
 for(let planet in planets){
 	let planetName = planets[planet]
+	let opcionAleatoria = generarOpcionAleatoria();
 	let el = document.createElement('div')
 	el.id = 'qr' + planet
 	loader.load('javascript/helvetiker_bold.typeface.json', function (font) {
-		let geometry = new THREE.TextGeometry('Hello, 3D Text!', {
+		let geometry = new THREE.TextGeometry(opcionAleatoria, {
 		font: font,
 		size: 0.1, // Tamaño del texto
 		height: 0.01, // Grosor del texto
