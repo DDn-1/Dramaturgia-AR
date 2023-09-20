@@ -327,7 +327,7 @@ const pose = frame.getViewerPose(xrRefSpace);
 				oldPositions.push( posi.map( (x,i) => x + 3e-3*ang[i]) )
 				includedModels.push(imageIndex);
 				model = models[imageIndex];
-				model.rotation.x = Math.PI / 2;
+				model.rotation.x += Math.PI / 2;
 			  	scene.add( model );
 			  }else{
 				model = models[imageIndex];
@@ -340,8 +340,9 @@ const pose = frame.getViewerPose(xrRefSpace);
 				let center = centerMass(newPositions)
 				let ang = turnUnit(calcAngular(posi, center))
 				oldPositions[index] =  posi.map( (x,i) => x + 3e-3*ang[i]) 
-				model.position.copy( pos.toJSON());
+				.position.copy( pos.toJSON());
 				model.quaternion.copy(quat.toJSON());
+				model.rotation.x = Math.PI / 2;
 			  } else if (state == "emulated") {
 			  }
 			}
