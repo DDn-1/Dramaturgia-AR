@@ -38,7 +38,7 @@ for(let planet in planets){
 	let planetName = planets[planet]
 	let el = document.createElement('div')
 	el.id = 'qr' + planet
-	let geometry = new TextGeometry( 'Hello three.js!', {
+	let geometry = new THREE.TextGeometry( 'Hello three.js!', {
 		font: font,
 		size: 0.1,
 		height: 0.01,
