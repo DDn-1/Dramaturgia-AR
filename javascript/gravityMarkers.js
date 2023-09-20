@@ -38,17 +38,7 @@ for(let planet in planets){
 	let planetName = planets[planet]
 	let el = document.createElement('div')
 	el.id = 'qr' + planet
-	let textGeometry = new THREE.TextGeometry( 'Hello three.js!', {
-		font: font,
-		size: 80,
-		height: 5,
-		curveSegments: 12,
-		bevelEnabled: true,
-		bevelThickness: 10,
-		bevelSize: 8,
-		bevelOffset: 0,
-		bevelSegments: 5
-	} );
+	//let geometry = new THREE.BoxGeometry( 1, 1, 1 ); 
 	let geometry = new THREE.SphereGeometry( 0.05, 32, 16 );
 	let material = new THREE.MeshStandardMaterial( {color: planetColors[planet]} );
 	sphere = new THREE.Mesh( geometry, material );
