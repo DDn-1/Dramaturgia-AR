@@ -326,6 +326,7 @@ const pose = frame.getViewerPose(xrRefSpace);
 				oldPositions.push( posi.map( (x,i) => x + 3e-3*ang[i]) )
 				includedModels.push(imageIndex);
 				model = models[imageIndex];
+				model.rotation.x = Math.PI / 2;
 			  	scene.add( model );
 			  }else{
 				model = models[imageIndex];
