@@ -94,8 +94,12 @@ for(let planet in planets){
 		//let geometry = new THREE.SphereGeometry( 0.05, 32, 16 );
 		//let material = new THREE.MeshStandardMaterial( {color: planetColors[planet]} );
 		sphere = new THREE.Mesh( geometry, material );
-		sphere.position.set(-2, 0, 0);
+		let textBoundingBox = new THREE.Box3().setFromObject(sphere);
+		let textCenter = textBoundingBox.getCenter(new THREE.Vector3());
+		sphere.position.copy(textCenter).multiplyScalar(-1);
+		//sphere.position.set(-2, -10, 0);
 		sphere.rotation.x = Math.PI / 2;
+		sphere.rotation.y = Math.PI / 2;
 		qrcodes[planetName] = (new QRCode(el, planetName))._oDrawing._elCanvas
 		createImageBitmap(qrcodes[planetName]).then(x=>{
 			bitmaps[planetName] = x
