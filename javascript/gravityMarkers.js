@@ -234,10 +234,27 @@ let newPositions = []
 let oldPositions = []
 dt = 0.03
 function onXRFrame(t, frame) {
-    const session = frame.session;
-    session.requestAnimationFrame(onXRFrame);
-    const baseLayer = session.renderState.baseLayer;
-    const pose = frame.getViewerPose(xrRefSpace);
+const session = frame.session;
+session.requestAnimationFrame(onXRFrame);
+const baseLayer = session.renderState.baseLayer;
+const pose = frame.getViewerPose(xrRefSpace);
+
+// Configurar el texto
+const textGeometry = new THREE.TextGeometry("Hello, 2D Text!", {
+    font: "helvetiker", // Fuente de texto (puedes cambiarla)
+    size: 1, // Tamaño del texto
+    height: 0.1, // Grosor del texto
+});
+
+// Crear un material
+const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 }); // Color del texto
+
+// Crear una malla (mesh) utilizando la geometría y el material
+let textMesh = new THREE.Mesh(textGeometry, material);
+
+// Agregar el texto a la escena
+scene.add(textMesh);
+
 
 	render()
 	if (pose && !play) {
@@ -303,22 +320,6 @@ function onXRFrame(t, frame) {
 	}
 
 }
-
-// Configurar el texto
-const textGeometry = new THREE.TextGeometry("Hello, 2D Text!", {
-    font: "helvetiker", // Fuente de texto (puedes cambiarla)
-    size: 1, // Tamaño del texto
-    height: 0.1, // Grosor del texto
-});
-
-// Crear un material
-const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 }); // Color del texto
-
-// Crear una malla (mesh) utilizando la geometría y el material
-let textMesh = new THREE.Mesh(textGeometry, material);
-
-// Agregar el texto a la escena
-scene.add(textMesh);
 
 init()
 function onWindowResize() {
