@@ -39,27 +39,28 @@ for(let planet in planets){
 	let el = document.createElement('div')
 	el.id = 'qr' + planet
 	loader.load('javascript/helvetiker_bold.typeface.json', function (font) {
-	    let geometry = new THREE.TextGeometry('Hello, 3D Text!', {
-	        font: font,
-	        size: 0.1, // Tamaño del texto
-	        height: 0.01, // Grosor del texto
-	        curveSegments: 12, // Segmentos de curva
-	        bevelEnabled: false, // Desactivar biseles
-	    });
+		let geometry = new THREE.TextGeometry('Hello, 3D Text!', {
+		font: font,
+		size: 0.1, // Tamaño del texto
+		height: 0.01, // Grosor del texto
+		curveSegments: 12, // Segmentos de curva
+		bevelEnabled: false, // Desactivar biseles
+		});
+		let material = new THREE.MeshBasicMaterial( {color: 0x00ff00} ); 
+		//let geometry = new THREE.SphereGeometry( 0.05, 32, 16 );
+		//let material = new THREE.MeshStandardMaterial( {color: planetColors[planet]} );
+		sphere = new THREE.Mesh( geometry, material );
+		qrcodes[planetName] = (new QRCode(el, planetName))._oDrawing._elCanvas
+		createImageBitmap(qrcodes[planetName]).then(x=>{
+			bitmaps[planetName] = x
+			trackableImages[planet]={
+				image : x,
+				widthInMeters: 0.1
+			}
+		})
+		models[planet] = sphere 
 	});
-	let material = new THREE.MeshBasicMaterial( {color: 0x00ff00} ); 
-	//let geometry = new THREE.SphereGeometry( 0.05, 32, 16 );
-	//let material = new THREE.MeshStandardMaterial( {color: planetColors[planet]} );
-	sphere = new THREE.Mesh( geometry, material );
-	qrcodes[planetName] = (new QRCode(el, planetName))._oDrawing._elCanvas
-	createImageBitmap(qrcodes[planetName]).then(x=>{
-		bitmaps[planetName] = x
-		trackableImages[planet]={
-			image : x,
-			widthInMeters: 0.1
-		}
-	})
-	models[planet] = sphere 
+	
 } 
 
 function xwwwform(jsonObject){
