@@ -30,13 +30,13 @@ let planetColors = [
 const sujetos = [
     'El pelo negro',
     'Yo',
-    'Mi tía'
+    'Mi t\u00ed a'
 ]
 
 const verbos = [
     'cae',
     'hay',
-    'representó'
+    'represent\u00ed'
 ]
 
 const predicados = [
