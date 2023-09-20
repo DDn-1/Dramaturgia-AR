@@ -38,7 +38,7 @@ for(let planet in planets){
 	let planetName = planets[planet]
 	let el = document.createElement('div')
 	el.id = 'qr' + planet
-	let geometry = new THREE.BoxGeometry( 10, 10, 10 ); 
+	let geometry = new THREE.BoxGeometry( 0.1, 0.1, 0.1 ); 
 	let material = new THREE.MeshBasicMaterial( {color: 0x00ff00} ); 
 	//let geometry = new THREE.SphereGeometry( 0.05, 32, 16 );
 	//let material = new THREE.MeshStandardMaterial( {color: planetColors[planet]} );
