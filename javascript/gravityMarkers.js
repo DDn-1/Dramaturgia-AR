@@ -254,8 +254,8 @@ for(let planet in planets){
 	loader.load('javascript/helvetiker_bold.typeface.json', function (font) {
 		let geometry = new THREE.TextGeometry(opcionAleatoria, {
 		font: font,
-		size: 0.05, // Tamaño del texto
-		height: 0.005, // Grosor del texto
+		size: 0.1, // Tamaño del texto
+		height: 0.01, // Grosor del texto
 		curveSegments: 12, // Segmentos de curva
 		bevelEnabled: false, // Desactivar biseles
 		});
