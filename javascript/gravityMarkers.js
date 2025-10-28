@@ -246,34 +246,43 @@ let verb = new Array(3)
 let predicate = new Array(2)
 
 
-for(let planet in planets){
-	let planetName = planets[planet]
-	let opcionAleatoria = generarOpcionAleatoria();
-	let el = document.createElement('div')
-	el.id = 'qr' + planet
-	loader.load('javascript/helvetiker_bold.typeface.json', function (font) {
-		let geometry = new THREE.TextGeometry(opcionAleatoria, {
-		font: font,
-		size: 0.1, // Tamaño del texto
-		height: 0.01, // Grosor del texto
-		curveSegments: 12, // Segmentos de curva
-		bevelEnabled: false, // Desactivar biseles
-		});
-		let material = new THREE.MeshBasicMaterial( {color: 0x00ff00} ); 
-		//let geometry = new THREE.SphereGeometry( 0.05, 32, 16 );
-		//let material = new THREE.MeshStandardMaterial( {color: planetColors[planet]} );
-		sphere = new THREE.Mesh( geometry, material );
-		qrcodes[planetName] = (new QRCode(el, planetName))._oDrawing._elCanvas
-		createImageBitmap(qrcodes[planetName]).then(x=>{
-			bitmaps[planetName] = x
-			trackableImages[planet]={
-				image : x,
-				widthInMeters: 0.1
-			}
-		})
-		models[planet] = sphere 
-	});
-	
+// Lista de textos o frases
+let textos = ["Hola", "Bienvenido", "Robótica", "Innovación", "Aprendizaje"]
+
+// Objetos y arreglos para manejar datos
+let qrCanvases = {}
+let qrBitmaps = {}
+let modelosTexto = new Array(textos.length)
+
+// Recorremos cada texto y generamos su modelo + QR
+for (let i in textos) {
+  let texto = textos[i]
+
+  // Crear elemento HTML donde irá el código QR
+  let elementoQR = document.createElement('div')
+  elementoQR.id = 'qr' + i
+
+  // Crear geometría simple (esfera pequeña como marcador)
+  let geometria = new THREE.SphereGeometry(0.05, 32, 16)
+  let material = new THREE.MeshStandardMaterial({ color: 0x0077ff })
+  let esfera = new THREE.Mesh(geometria, material)
+
+  // Generar QR del texto
+  let qr = new QRCode(elementoQR, texto)
+  let canvasQR = qr._oDrawing._elCanvas
+  qrCanvases[texto] = canvasQR
+
+  // Convertir a bitmap para usarlo como imagen rastreable
+  createImageBitmap(canvasQR).then(bitmap => {
+    qrBitmaps[texto] = bitmap
+    trackableImages[i] = {
+      image: bitmap,
+      widthInMeters: 0.1
+    }
+  })
+
+  // Guardar el modelo asociado al texto
+  models[i] = esfera
 } 
 
 function xwwwform(jsonObject){
