@@ -1,4 +1,4 @@
-const loader = new THREE.FontLoader();
+
 let  desktopCube, socket;
 let clock = new THREE.Clock()
 let trackableImages = new Array(9)
@@ -27,253 +27,29 @@ let planetColors = [
 	0x40c0e0,
 	0x20c0fe
 ]
-const sujetos = [
-	'El pelo negro',
-	'Yo',
-	'Mi tia',
-	'Esto',
-	'Toda la parte baja',
-	'Ella',
-	'Los colores de esa pintura',
-	'El',
-	'Mi vientre',
-	'una practica',
-	'Las unas de mi hija',
-	'Las unas de el',
-	'Algo',
-	'brazos',
-	'genitales',
-	'Las miradas',
-	'el movimiento del ojo',
-	'nosotros',
-	'esa mirada',
-	'La gramatica',
-	'Las capas',
-	'Alguien',
-	'Los besos',
-	'alas',
-	'La lengua',
-	'tu'
-]
-
-const verbos = [
-'cae', 'hay', 'represento', 'era', 'no existe', 'no siente', 'son', 'imagino', 'dijo', 'siente', 'Corto', 'sublima', 'Son', 'eran', 'Quedan', 'no se controlan', 'andan', 'nos acercan', 'nos ayudan', 'Nos ayudan', 'Saco', 'Oculto', 'Las hago', 'decoro', 'pinto', 'Tiene', 'que se mueven', 'que se hinchan', 'explotan', 'entiendo', 'hacen modificar', 'construye', 'Digo', 'No podemos asegurar', 'da cuenta de', 'Construye', 'constituye', 'Abren', 'cierran', 'dan lugar', 'construyen', 'diria', 'son', 'se construyen', 'Juega', 'Habla', 'Camina', 'se deja lamer', 'son', 'Escriben', 'Aprenden', 'inventan', 'son', 'son', 'son', 'Asistes', 'Gustan', 'Asustan', 'Eres', 'Esperas', 'esperas', 'Miras', 'Preguntas', 'Ries', 'Sabes', 'rompes', 'vuelves'
-]
-
-const predicados = [
-'sobre mis hombros',
-'imagenes que en vez de rostro muestran muecas',
-'desnuda tomandome las piernas',
-'una representacion mia',
-'quiza como ella misma',
-'las piernas',
-'azul, amarillo y naranja',
-'en un vacio-rostro',
-'que deseaba mis piernas fuertes',
-'Calor',
-'Hinchazon',
-'Enojo',
-'Rabia',
-'Frustracion',
-'Latidos',
-'Calambres',
-'ninas creciendo',
-'enamoramiento',
-'calentura',
-'placer',
-'las unas de las manos y los pies, mias y de mi hija.',
-'la sombra',
-'el vacio del yo',
-'el enigma',
-'delgadas',
-'Grandes y largas',
-'Por ahi',
-'A las bestias',
-'a tipear',
-'a rascar',
-'a acariciar',
-'a dar placer',
-'a defendernos',
-'Las unas',
-'largas',
-'De colores',
-'Impulsos',
-'latidos y pensamientos',
-'imagenes-sonidos',
-'sensaciones somaticas',
-'pies en movimiento',
-'en electricidad multicolor',
-'que no es solo eso',
-'los ojos',
-'desde donde una mira',
-'pero tambien los ojos de otros y otras',
-'las pupilas',
-'una mirada',
-"parece",
-'a partir de los gestos nada de cierto',
-'lo que sucede somaticamente',
-'lo que podria parecer un estado de ser y estar',
-'tecnicas del habla',
-'una personalidad',
-'un estar',
-'un configurar y compartir codigos',
-'vínculos',
-'Posibilidades',
-'encuentro',
-'distancia',
-'la memoria, la perdida de la misma',
-'la posibilidad de construir un relato, de variarlo, de volverlo a relatar y que sea distinto',
-'la mutacion de la narrativa de la existencia antes y ahora',
-'que los besos.',
-'presente y distancia',
-'tocar sin saber que hay dentro',
-'que demonios',
-'tuneles',
-'en la lengua',
-'Silencio',
-'Estancia',
-'despliegue',
-'arrugas',
-'nuevas palabras',
-'estilos',
-'formas de inscripcion',
-'como reflejo de eso que son pero no saben que y quienes.',
-'la textura de su voz',
-'el tono de sus frases',
-'las pausas',
-'los errores',
-'el canto',
-'la musica que sale como habla',
-'los balbuceos',
-'los silbidos.',
-'los dibujos de las estrellas',
-'los mantos',
-'los tapices..',
-'Algodones',
-'arcoiris',
-'dinosaurios de juguete',
-'aunque estuviera muerta',
-'en el cuerpo momia quedaria el corte mediano con puntas decoloradas de mi forma',
-'como prueba de mi existencia.',
-'o en su reverso galaxias en movimiento',
-'como es arriba es abajo',
-'especificamente las rodillas.',
-'Mas estridente',
-'el color morado y el dorado',
-'cariño',
-'maternidad',
-'dolor',
-'expansion',
-'expulsion',
-'fuerza',
-'impulso',
-'rectitud',
-'postura',
-'sueño',
-'relajacion',
-'a un encuentro de mujeres',
-'a un encuentro de mujeres dramaturgas',
-'a un encuentro de la nueva dramaturgia iberoamericana, escrita por mujeres que se encuentran',
-'los encuentros',
-'los encuentros y te dan miedo, tambien',
-'las dramaturgas y te dan miedo, tambien',
-'dramaturga y es mentira pero es verdad, tambien',
-'una mesa de trabajo de dramaturgias expandidas',
-'que no te obliguen a participar',
-'que no sea como en esas obras de teatro',
-'donde rompen la cuarta pared',
-'que los actores te hablen',
-'que te pregunten cosas',
-'que no sea como esas conferencias',
-'encontrar asiento',
-'que haya una silla en las ultimas filas para sentarte',
-'mirar a veces tu celular',
-'mirar la nuca de la señora sentada adelante tuyo',
-'con la gente que siempre viene a estos encuentros',
-'A Esa gente que es tu gente',
-'que esto sea mentira pero es verdad, tambien',
-'las cosas expandidas',
-'la hora en tu celular',
-'que no sea una mesa de trabajo',
-'esas mesas de trabajo donde se sientan personas',
-'que tengan una botellita de agua en su lugar sobre la mesa y un microfono que no funciona',
-'que las personas hablen y se encuentren y se den la razon',
-'que pregunten si alguien tiene preguntas',
-'cuanto va a durar',
-'una experta en cosas que se expanden.',
-'una experta en cosas que se salen de los bordes, que rebalsan',
-'a un encuentro de mujeres dramaturgas expandidas',
-'porque eres experta en expansion',
-'porque te asustan los encuentros',
-'porque buscas un asiento cerca de la salida',
-'porque quieres retirarte sin llamar la atencion de las dramaturgas que se expanden',
-'tapandote la boca con la mano',
-'de expansion',
-'de bordes permeables',
-'cada dia la cuarta pared y la quinta.'
-]
-
-function generarOpcionAleatoria() {
-    const sujetoAleatorio = sujetos[Math.floor(Math.random() * sujetos.length)];
-    const verboAleatorio = verbos[Math.floor(Math.random() * verbos.length)];
-    const predicadoAleatorio = predicados[Math.floor(Math.random() * predicados.length)];
-
-    const opcion = Math.floor(Math.random() * 5) + 1;
-
-    switch (opcion) {
-        case 1:
-            return `${sujetoAleatorio} ${verboAleatorio} ${predicadoAleatorio}`;
-        case 2:
-            return `${sujetoAleatorio} ${predicadoAleatorio}`;
-        case 3:
-            return `${verboAleatorio}`;
-        case 4:
-            return `${verboAleatorio} ${predicadoAleatorio}`;
-        case 5:
-            return `${sujetoAleatorio} ${verboAleatorio}`;
-    }
-}
-
 
 // masses
 let planetMasses =[]
 
 let items = {}
-let subject = new Array(3)
-let verb = new Array(3)
-let predicate = new Array(2)
 let models = new Array(9)
 let bitmaps = {}
-
-
 for(let planet in planets){
 	let planetName = planets[planet]
-	let opcionAleatoria = generarOpcionAleatoria();
 	let el = document.createElement('div')
 	el.id = 'qr' + planet
-	loader.load('javascript/helvetiker_bold.typeface.json', function (font) {
-		let geometry = new THREE.TextGeometry(opcionAleatoria, {
-		font: font,
-		size: 0.1, // Tamaño del texto
-		height: 0.01, // Grosor del texto
-		curveSegments: 12, // Segmentos de curva
-		bevelEnabled: false, // Desactivar biseles
-		});
-		let material = new THREE.MeshBasicMaterial( {color: 0x00ff00} ); 
-		//let geometry = new THREE.SphereGeometry( 0.05, 32, 16 );
-		//let material = new THREE.MeshStandardMaterial( {color: planetColors[planet]} );
-		sphere = new THREE.Mesh( geometry, material );
-		qrcodes[planetName] = (new QRCode(el, planetName))._oDrawing._elCanvas
-		createImageBitmap(qrcodes[planetName]).then(x=>{
-			bitmaps[planetName] = x
-			trackableImages[planet]={
-				image : x,
-				widthInMeters: 0.1
-			}
-		})
-		models[planet] = sphere 
-	});
-	
+	let geometry = new THREE.SphereGeometry( 0.05, 32, 16 );
+	let material = new THREE.MeshStandardMaterial( {color: planetColors[planet]} );
+	sphere = new THREE.Mesh( geometry, material );
+	qrcodes[planetName] = (new QRCode(el, planetName))._oDrawing._elCanvas
+	createImageBitmap(qrcodes[planetName]).then(x=>{
+		bitmaps[planetName] = x
+		trackableImages[planet]={
+			image : x,
+			widthInMeters: 0.1
+		}
+	})
+	models[planet] = sphere 
 } 
 
 function xwwwform(jsonObject){
@@ -408,22 +184,8 @@ function getXRSessionInit( mode, options) {
 function AR(){
 	var currentSession = null;
 	function onSessionStarted( session ) {
-		session.addEventListener( 'end', onSessionEnded );
-		renderer.xr.setSession( session );
-		gl = renderer.getContext()
-		button.style.display = 'none';
-		button.textContent = 'EXIT AR';
-		currentSession = session;
-		session.requestReferenceSpace('local').then((refSpace) => {
-          xrRefSpace = refSpace;
-          session.requestAnimationFrame(onXRFrame);
-        });
 	}
 	function onSessionEnded( /*event*/ ) {
-		currentSession.removeEventListener( 'end', onSessionEnded );
-		renderer.xr.setSession( null );
-		button.textContent = 'ENTER AR' ;
-		currentSession = null;
 	}
 	if ( currentSession === null ) {
 		
@@ -458,10 +220,10 @@ let newPositions = []
 let oldPositions = []
 dt = 0.03
 function onXRFrame(t, frame) {
-const session = frame.session;
-session.requestAnimationFrame(onXRFrame);
-const baseLayer = session.renderState.baseLayer;
-const pose = frame.getViewerPose(xrRefSpace);
+    const session = frame.session;
+    session.requestAnimationFrame(onXRFrame);
+    const baseLayer = session.renderState.baseLayer;
+    const pose = frame.getViewerPose(xrRefSpace);
 
 	render()
 	if (pose && !play) {
@@ -480,8 +242,6 @@ const pose = frame.getViewerPose(xrRefSpace);
 			  var model = undefined;
 			  pos = pose1.transform.position
 			  quat = pose1.transform.orientation
-			  //quat.x = Math.PI / 2
-			  //quat.y = 1
 			//   label
 			  if( !includedModels.includes(imageIndex) ){
 				let posi = poseToArray(pos)
@@ -503,7 +263,7 @@ const pose = frame.getViewerPose(xrRefSpace);
 				let center = centerMass(newPositions)
 				let ang = turnUnit(calcAngular(posi, center))
 				oldPositions[index] =  posi.map( (x,i) => x + 3e-3*ang[i]) 
-				.position.copy( pos.toJSON());
+				model.position.copy( pos.toJSON());
 				model.quaternion.copy(quat.toJSON());
 			  } else if (state == "emulated") {
 			  }
@@ -529,7 +289,6 @@ const pose = frame.getViewerPose(xrRefSpace);
 	}
 
 }
-
 init()
 function onWindowResize() {
 	camera.aspect = window.innerWidth / window.innerHeight;
