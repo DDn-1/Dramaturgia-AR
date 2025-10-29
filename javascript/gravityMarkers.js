@@ -60,6 +60,7 @@ fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.
 
         // Rotar el grupo (no el texto directamente)
         textGroup.rotation.x = -Math.PI / 2; // lo echamos sobre el plano
+        textGroup.rotation.z = -Math.PI / 2; // lo echamos sobre el plano
         textGroup.position.y = 0.02; // elevar un poco el texto para que no se meta en el suelo
 
         models[i] = textGroup;
