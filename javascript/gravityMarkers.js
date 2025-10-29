@@ -1,142 +1,190 @@
-function AR(){
+let trackableImages = new Array(9);
+let qrcodes = {};
+let models = new Array(9);
+let bitmaps = {};
+let includedModels = [];
+
+let planets = [
+    'sun',
+    'earth',
+    'venus',
+    'mars',
+    'mercury',
+    'jupiter',
+    'neptune',
+    'uranus',
+    'saturn'
+];
+let planetColors = [
+    0xfefe99,
+    0xfecc77,
+    0xe066e0,
+    0x66c9fe,
+    0xfe66e0,
+    0xc0c0b0,
+    0xe0c0b0,
+    0x40c0e0,
+    0x20c0fe
+];
+
+// === Crear modelos y QR ===
+for (let i in planets) {
+    let planetName = planets[i];
+    let el = document.createElement('div');
+    el.id = 'qr' + planetName;
+
+    // Crear letra en vez de esfera
+    let letter = planetName.charAt(0).toUpperCase(); // primera letra del planeta
+    let fontLoader = new THREE.FontLoader();
+    fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
+        let textGeometry = new THREE.TextGeometry(letter, {
+            font: font,
+            size: 0.08,
+            height: 0.01,
+            curveSegments: 12,
+        });
+        let textMaterial = new THREE.MeshStandardMaterial({ color: planetColors[i] });
+        let textMesh = new THREE.Mesh(textGeometry, textMaterial);
+        textMesh.position.set(0, 0, 0);
+        models[i] = textMesh;
+    });
+
+    // Generar QR e imagen rastreable
+    qrcodes[planetName] = (new QRCode(el, planetName))._oDrawing._elCanvas;
+    createImageBitmap(qrcodes[planetName]).then((x) => {
+        bitmaps[planetName] = x;
+        trackableImages[i] = {
+            image: x,
+            widthInMeters: 0.1
+        };
+    });
+}
+
+// === Escena ===
+let camera, scene, renderer, xrRefSpace, gl;
+
+scene = new THREE.Scene();
+scene.add(new THREE.AmbientLight(0x222222));
+
+let dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+dirLight.position.set(0.9, 1, 0.6).normalize();
+scene.add(dirLight);
+
+camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 20000);
+renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.xr.enabled = true;
+document.body.appendChild(renderer.domElement);
+
+window.addEventListener('resize', onWindowResize, false);
+
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+// === WebXR AR ===
+function getXRSessionInit(mode, options) {
+    if (options && options.referenceSpaceType) {
+        renderer.xr.setReferenceSpaceType(options.referenceSpaceType);
+    }
+    var space = (options || {}).referenceSpaceType || 'local-floor';
+    var sessionInit = (options && options.sessionInit) || {};
+    var newInit = Object.assign({}, sessionInit);
+    newInit.requiredFeatures = [space];
+    if (sessionInit.requiredFeatures) {
+        newInit.requiredFeatures = newInit.requiredFeatures.concat(sessionInit.requiredFeatures);
+    }
+    return newInit;
+}
+
+function AR() {
     var currentSession = null;
-
-    // ======== NUEVO: capa de texto ========
-    function showOverlayText(text){
-        let overlay = document.getElementById('ar-overlay-text');
-        if(!overlay){
-            overlay = document.createElement('div');
-            overlay.id = 'ar-overlay-text';
-            overlay.style.position = 'absolute';
-            overlay.style.top = '1rem';
-            overlay.style.left = '1rem';
-            overlay.style.zIndex = '10000';
-            overlay.style.fontSize = '1.5rem';
-            overlay.style.color = 'white';
-            overlay.style.textShadow = '0 0 6px black';
-            overlay.style.fontFamily = 'Arial, sans-serif';
-            document.body.appendChild(overlay);
-        }
-        overlay.textContent = text;
-    }
-    // =====================================
-
-    function startWebXRSession() {
-        const sessionInit = {
-			requiredFeatures: ['dom-overlay', 'image-tracking'],
-			trackedImages: trackableImages,
-			domOverlay: { root: document.body }
-		};
-        return navigator.xr.requestSession('immersive-ar', sessionInit);
-    }
 
     function onSessionStarted(session) {
         session.addEventListener('end', onSessionEnded);
         renderer.xr.setSession(session);
         gl = renderer.getContext();
-        if (typeof button !== 'undefined') button.textContent = 'EXIT AR';
+        button.textContent = 'EXIT AR';
         currentSession = session;
         session.requestReferenceSpace('local').then((refSpace) => {
             xrRefSpace = refSpace;
             session.requestAnimationFrame(onXRFrame);
         });
-
-        // Mostrar texto sobre la cámara
-        showOverlayText("Modo Realidad Aumentada Activo 🚀");
     }
 
-    function onSessionEnded(){
-        try { currentSession.removeEventListener('end', onSessionEnded); } catch(e){}
-        renderer.xr.setSession(null);
-        if (typeof button !== 'undefined') button.textContent = 'ENTER AR';
+    function onSessionEnded() {
+        button.textContent = 'ENTER AR';
         currentSession = null;
-
-        // Eliminar texto al salir
-        let overlay = document.getElementById('ar-overlay-text');
-        if(overlay) overlay.remove();
     }
 
-    if (currentSession && typeof currentSession.end === 'function') {
-        currentSession.end();
-        return;
-    }
-
-    // ======== Fallback: cámara normal ========
-    function fallbackToGetUserMedia() {
-        console.warn("Usando cámara normal (fallback).");
-        let v = document.getElementById('ar-fallback-video');
-        if (!v) {
-            v = document.createElement('video');
-            v.id = 'ar-fallback-video';
-            v.autoplay = true;
-            v.playsInline = true;
-            v.style.position = 'absolute';
-            v.style.top = '0';
-            v.style.left = '0';
-            v.style.width = '100vw';
-            v.style.height = '100vh';
-            v.style.objectFit = 'cover';
-            v.style.zIndex = 9999;
-            document.body.appendChild(v);
-        }
-
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
-            .then(stream => {
-                v.srcObject = stream;
-                if (typeof button !== 'undefined') button.textContent = 'EXIT CAMERA';
-
-                // Mostrar texto también en fallback
-                showOverlayText("Vista de Cámara Activada 📷");
-
-                if (!document.getElementById('stopCameraBtn')) {
-                    const stopBtn = document.createElement('button');
-                    stopBtn.id = 'stopCameraBtn';
-                    stopBtn.textContent = 'Cerrar cámara';
-                    stopBtn.style.position = 'absolute';
-                    stopBtn.style.top = '1rem';
-                    stopBtn.style.right = '1rem';
-                    stopBtn.style.zIndex = 10000;
-                    document.body.appendChild(stopBtn);
-
-                    stopBtn.addEventListener('click', () => {
-                        stream.getTracks().forEach(t => t.stop());
-                        v.remove();
-                        stopBtn.remove();
-                        if (typeof button !== 'undefined') button.textContent = 'Entrar a Realidad Aumentada';
-                        let overlay = document.getElementById('ar-overlay-text');
-                        if(overlay) overlay.remove();
-                    });
-                }
-            })
-            .catch(err => {
-                console.error('No se pudo abrir la cámara con getUserMedia:', err);
-                alert('No se pudo abrir la cámara. Revisa permisos o usa un dispositivo compatible con WebXR.');
-            });
-    }
-
-    // ======== Lógica principal ========
-    if (!navigator.xr) {
-        console.warn("WebXR no disponible en este navegador. Usando cámara normal.");
-        fallbackToGetUserMedia();
-        return;
-    }
-
-    navigator.xr.isSessionSupported('immersive-ar')
-        .then((supported) => {
-            if (supported) {
-                startWebXRSession()
-                    .then(onSessionStarted)
-                    .catch(err => {
-                        console.warn("Fallo al crear sesión WebXR:", err);
-                        fallbackToGetUserMedia();
-                    });
-            } else {
-                console.warn("immersive-ar no soportado en este dispositivo.");
-                fallbackToGetUserMedia();
-            }
-        })
-        .catch(err => {
-            console.warn("Error verificando isSessionSupported:", err);
-            fallbackToGetUserMedia();
+    if (currentSession === null) {
+        let options = {
+            requiredFeatures: ['dom-overlay', 'image-tracking'],
+            trackedImages: trackableImages,
+            domOverlay: { root: document.body }
+        };
+        var sessionInit = getXRSessionInit('immersive-ar', {
+            mode: 'immersive-ar',
+            referenceSpaceType: 'local',
+            sessionInit: options
         });
+        navigator.xr.requestSession('immersive-ar', sessionInit).then(onSessionStarted);
+    } else {
+        currentSession.end();
+    }
 }
+
+function onXRFrame(t, frame) {
+    const session = frame.session;
+    session.requestAnimationFrame(onXRFrame);
+    const baseLayer = session.renderState.baseLayer;
+    const pose = frame.getViewerPose(xrRefSpace);
+
+    renderer.render(scene, camera);
+
+    if (pose) {
+        for (const view of pose.views) {
+            const viewport = baseLayer.getViewport(view);
+            gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
+
+            const results = frame.getImageTrackingResults();
+            for (const result of results) {
+                const imageIndex = result.index;
+                const pose1 = frame.getPose(result.imageSpace, xrRefSpace);
+                if (!pose1) continue;
+
+                const pos = pose1.transform.position;
+                const quat = pose1.transform.orientation;
+
+                let model = models[imageIndex];
+                if (!scene.children.includes(model)) {
+                    scene.add(model);
+                }
+                model.position.copy(pos);
+                model.quaternion.copy(quat);
+            }
+        }
+    }
+}
+
+// === Render loop básico ===
+function render() {
+    renderer.render(scene, camera);
+}
+
+// === Botón principal ===
+var button = document.createElement('button');
+button.id = 'ArButton';
+button.textContent = 'ENTER AR';
+button.style.cssText = `
+    position: absolute;
+    top: 80%;
+    left: 40%;
+    width: 20%;
+    height: 2rem;
+`;
+document.body.appendChild(button);
+button.addEventListener('click', () => AR());
