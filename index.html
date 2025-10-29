@@ -1,132 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>AR SUN</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { margin: 0; overflow: hidden; background: black; }
-    button {
-      position: absolute;
-      bottom: 1rem;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
-      background: #00cc88;
-      border: none;
-      border-radius: 0.5rem;
-      color: white;
-    }
-  </style>
+    <title>AR</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <style>
+        @import url(https://fonts.googleapis.com/css?family=Quicksand);
+        body { background-color: black; }
+    </style>
 </head>
 <body>
+    <script src="./javascript/lib/qrcode.js"></script>
+    <div id="qrCode"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-  <div id="qr"></div>
+    <!-- ⚠️ Importante: este script al final -->
+    <script src="./javascript/gravityMarkers.js"></script>
 
-  <!-- Librerías necesarias -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-  <script>
-  let scene, camera, renderer, xrRefSpace, gl;
-  let models = [];
-  let trackableImages = [];
-  let bitmaps = {};
-  let qrcodes = {};
-
-  // === 1️⃣ Generar el QR de "sun" ===
-  let el = document.createElement('div');
-  el.id = 'qrSun';
-  document.getElementById('qr').appendChild(el);
-
-  qrcodes['sun'] = (new QRCode(el, 'sun'))._oDrawing._elCanvas;
-
-  // Convertimos el QR a imagen para WebXR
-  createImageBitmap(qrcodes['sun']).then(x => {
-    bitmaps['sun'] = x;
-    trackableImages.push({
-      image: x,
-      widthInMeters: 0.1
-    });
-  });
-
-  // === 2️⃣ Crear la escena de Three.js ===
-  scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
-  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.xr.enabled = true;
-  document.body.appendChild(renderer.domElement);
-
-  // Creamos el texto "SUN"
-  const fontLoader = new THREE.FontLoader();
-  const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-  fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
-    const textGeo = new THREE.TextGeometry('SUN', {
-      font: font,
-      size: 0.05,
-      height: 0.01
-    });
-    const textMesh = new THREE.Mesh(textGeo, textMaterial);
-    models[0] = textMesh;
-  });
-
-  // === 3️⃣ Función AR (abre la cámara y detecta el QR) ===
-  function AR() {
-    if (!navigator.xr) {
-      alert("WebXR no está disponible. Prueba con un dispositivo móvil o usa getUserMedia fallback.");
-      return;
-    }
-
-    const sessionInit = {
-      requiredFeatures: ['dom-overlay', 'image-tracking'],
-      trackedImages: trackableImages,
-      domOverlay: { root: document.body }
-    };
-
-    navigator.xr.requestSession('immersive-ar', sessionInit).then(session => {
-      renderer.xr.setSession(session);
-      gl = renderer.getContext();
-      session.requestReferenceSpace('local').then(refSpace => {
-        xrRefSpace = refSpace;
-        session.requestAnimationFrame(onXRFrame);
-      });
-    }).catch(err => {
-      alert('Error iniciando AR: ' + err);
-    });
-  }
-
-  // === 4️⃣ Dibujar el texto sobre el QR detectado ===
-  function onXRFrame(t, frame) {
-    const session = frame.session;
-    session.requestAnimationFrame(onXRFrame);
-    const baseLayer = session.renderState.baseLayer;
-    const pose = frame.getViewerPose(xrRefSpace);
-    renderer.render(scene, camera);
-
-    if (pose) {
-      const results = frame.getImageTrackingResults();
-      for (const result of results) {
-        const pose1 = frame.getPose(result.imageSpace, xrRefSpace);
-        const pos = pose1.transform.position;
-        const quat = pose1.transform.orientation;
-
-        if (models[0]) {
-          let model = models[0];
-          model.position.copy(pos.toJSON());
-          model.quaternion.copy(quat.toJSON());
-          if (!scene.children.includes(model)) scene.add(model);
-        }
-      }
-    }
-  }
-
-  // === Botón para iniciar AR ===
-  const button = document.createElement('button');
-  button.textContent = 'Entrar a AR';
-  button.onclick = AR;
-  document.body.appendChild(button);
-  </script>
 </body>
 </html>
