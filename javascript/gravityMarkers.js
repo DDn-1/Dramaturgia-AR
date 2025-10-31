@@ -5,17 +5,18 @@ let bitmaps = {};
 let includedModels = [];
 
 let planets = [
-    'sun',
-    'earth',
-    'venus',
-    'mars',
-    'mercury',
-    'jupiter',
-    'neptune',
-    'uranus',
-    'saturn',
-    'pluto' // opcional si querés tener 10 exactos
+    'El cuerpo guarda la memoria del tiempo.',
+    'La piel escribe la historia de los días.',
+    'Los huesos sostienen el peso de los años.',
+    'El pulso mide la distancia entre pasado y futuro.',
+    'La respiración traduce el paso del tiempo en vida.',
+    'El cuerpo anuncia lo que el alma aún ignora.',
+    'La carne recuerda lo que la mente olvida.',
+    'El movimiento revela los secretos del devenir.',
+    'El cuerpo predice el destino con su propio ritmo.',
+    'La piel escucha el lenguaje oculto del tiempo.'
 ];
+
 let planetColors = [
     0xfefe99,
     0xfecc77,
@@ -33,54 +34,80 @@ let planetColors = [
 let fontLoader = new THREE.FontLoader();
 fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
     for (let i = 0; i < planets.length; i++) {
-        let planetName = planets[i];
+        let planetText = planets[i]; // puede tener varias palabras
         let el = document.createElement('div');
-        el.id = 'qr' + i; // el id del QR se basa en el número
+        el.id = 'qr' + i; // QR basado en número
 
-        // === Crear texto 3D con el nombre del planeta ===
-        let textGeometry = new THREE.TextGeometry(planetName.toUpperCase(), {
-            font: font,
-            size: 0.05,
-            height: 0.01,
-            curveSegments: 12,
-        });
-        textGeometry.computeBoundingBox();
+        // ======= Dividir texto largo en líneas =======
+        const maxCharsPerLine = 20;
+        const words = planetText.split(" ");
+        let lines = [];
+        let currentLine = "";
 
-        // Centrar el texto
-        const centerOffsetX = -0.5 * (textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x);
-        const centerOffsetY = -0.5 * (textGeometry.boundingBox.max.y - textGeometry.boundingBox.min.y);
-        const centerOffsetZ = -0.5 * (textGeometry.boundingBox.max.z - textGeometry.boundingBox.min.z);
-        textGeometry.translate(centerOffsetX, centerOffsetY, centerOffsetZ);
+        for (let w of words) {
+            if ((currentLine + " " + w).trim().length > maxCharsPerLine) {
+                lines.push(currentLine.trim());
+                currentLine = w;
+            } else {
+                currentLine += " " + w;
+            }
+        }
+        if (currentLine.trim().length > 0) lines.push(currentLine.trim());
 
-        // Material y mesh
-        let textMaterial = new THREE.MeshStandardMaterial({ color: planetColors[i] });
-        let textMesh = new THREE.Mesh(textGeometry, textMaterial);
-        textMesh.rotation.x = -Math.PI / 2; // acostar texto
+        // ======= Ajustar tamaño según cantidad de líneas =======
+        let textSize = 0.05;
+        if (lines.length === 2) textSize = 0.04;
+        else if (lines.length >= 3) textSize = 0.03;
 
-        // Agrupar y rotar
+        // ======= Crear grupo para todas las líneas =======
         let textGroup = new THREE.Group();
-        textGroup.add(textMesh);
+        const lineSpacing = 0.07; // distancia entre líneas
+
+        for (let j = 0; j < lines.length; j++) {
+            let lineGeometry = new THREE.TextGeometry(lines[j].toUpperCase(), {
+                font: font,
+                size: textSize,
+                height: 0.008,
+                curveSegments: 12,
+            });
+            lineGeometry.computeBoundingBox();
+
+            // Centrar cada línea
+            const centerOffsetX = -0.5 * (lineGeometry.boundingBox.max.x - lineGeometry.boundingBox.min.x);
+            const centerOffsetY = -0.5 * (lineGeometry.boundingBox.max.y - lineGeometry.boundingBox.min.y);
+            lineGeometry.translate(centerOffsetX, centerOffsetY, 0);
+
+            let textMaterial = new THREE.MeshStandardMaterial({ color: planetColors[i] });
+            let textMesh = new THREE.Mesh(lineGeometry, textMaterial);
+
+            // Posicionar las líneas una debajo de otra
+            textMesh.position.y = -(j * lineSpacing);
+
+            textGroup.add(textMesh);
+        }
+
+        // Acostar todo el grupo
+        textGroup.rotation.x = -Math.PI / 2;
         textGroup.position.y = 0.02;
 
-        // Definir rotación "echada" como offset
+        // Guardar rotación offset (por si se usa en onXRFrame)
         let offsetEuler = new THREE.Euler(Math.PI, 0, 0, 'XYZ');
         let offsetQuaternion = new THREE.Quaternion().setFromEuler(offsetEuler);
         textGroup.userData.offsetQuaternion = offsetQuaternion;
 
-        // Guardar el modelo
         models[i] = textGroup;
 
         // === Generar QR basado en número ===
         let qrNumber = i.toString();
         qrcodes[qrNumber] = (new QRCode(el, qrNumber))._oDrawing._elCanvas;
 
-        // Crear imagen rastreable
         createImageBitmap(qrcodes[qrNumber]).then((x) => {
             bitmaps[qrNumber] = x;
             trackableImages[i] = { image: x, widthInMeters: 0.1 };
         });
     }
 });
+
 
 
 // === Escena ===
