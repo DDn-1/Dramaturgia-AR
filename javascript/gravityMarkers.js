@@ -180,45 +180,38 @@ function onXRFrame(t, frame) {
                 const pose1 = frame.getPose(result.imageSpace, xrRefSpace);
                 if (!pose1) continue;
 
-                const pos = pose1.transform.position;
-                const quat = pose1.transform.orientation;
+                // Obtenemos el modelo correspondiente
+                let model = models[imageIndex];
+                if (!scene.children.includes(model)) {
+                    scene.add(model);
+                }
 
-                let model = models[imageIndex];
-                if (!scene.children.includes(model)) {
-                    scene.add(model);
-                }
-                model.position.copy(pos);
-                // dentro de tu loop de results en onXRFrame:
-                let model = models[imageIndex];
-                if (!scene.children.includes(model)) {
-                    scene.add(model);
-                }
-                
-                // convertimos el quat recibido (DOM) a THREE.Quaternion
-                const poseQuat = new THREE.Quaternion(pose1.transform.orientation.x,
-                                                      pose1.transform.orientation.y,
-                                                      pose1.transform.orientation.z,
-                                                      pose1.transform.orientation.w);
-                
-                // Ahora aplicamos la orientación del marcador y luego multiplicamos por el offset
-                // para "acostar" el texto relativa a la orientación del marcador.
+                // Quaternion del marcador (pose del frame)
+                const poseQuat = new THREE.Quaternion(
+                    pose1.transform.orientation.x,
+                    pose1.transform.orientation.y,
+                    pose1.transform.orientation.z,
+                    pose1.transform.orientation.w
+                );
+
+                // Aplicamos la orientación del marcador + offset para acostar el texto
                 if (model && model.userData && model.userData.offsetQuaternion) {
-                    // Queremos: finalQuat = poseQuat * offsetQ
-                    // En Three.js: final.copy(poseQuat).multiply(offsetQ)
                     model.quaternion.copy(poseQuat).multiply(model.userData.offsetQuaternion);
                 } else {
                     model.quaternion.copy(poseQuat);
                 }
-                
-                // posición (usar set para robustez)
-                model.position.set(pose1.transform.position.x,
-                                   pose1.transform.position.y,
-                                   pose1.transform.position.z);
 
+                // Actualizamos la posición del modelo
+                model.position.set(
+                    pose1.transform.position.x,
+                    pose1.transform.position.y,
+                    pose1.transform.position.z
+                );
             }
         }
     }
 }
+
 
 // === Render loop básico ===
 function render() {
