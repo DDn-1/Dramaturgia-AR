@@ -159,7 +159,62 @@ function AR() {
     }
 }
 
+function onXRFrame(t, frame) {
+    const session = frame.session;
+    session.requestAnimationFrame(onXRFrame);
 
+    const baseLayer = session.renderState.baseLayer;
+    const pose = frame.getViewerPose(xrRefSpace);
+
+    // render principal
+    renderer.render(scene, camera);
+
+    if (!pose) return;
+
+    for (const view of pose.views) {
+        const viewport = baseLayer.getViewport(view);
+        gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
+
+        const results = frame.getImageTrackingResults();
+        for (const result of results) {
+            const imageIndex = result.index;
+            const pose1 = frame.getPose(result.imageSpace, xrRefSpace);
+            if (!pose1) continue;
+
+            // Asegurarse de que el modelo existe y esté listo
+            const model = models[imageIndex];
+            if (!model) continue;
+
+            // Añadir al scene solo si aún no está
+            if (!scene.children.includes(model)) {
+                scene.add(model);
+            }
+
+            // Convertir la orientación del pose (DOM) a THREE.Quaternion
+            const poseQuat = new THREE.Quaternion(
+                pose1.transform.orientation.x,
+                pose1.transform.orientation.y,
+                pose1.transform.orientation.z,
+                pose1.transform.orientation.w
+            );
+
+            // Si el modelo tiene un offsetQuaternion (rotación de corrección), aplicarla
+            if (model.userData && model.userData.offsetQuaternion instanceof THREE.Quaternion) {
+                // finalQuat = poseQuat * offset
+                model.quaternion.copy(poseQuat).multiply(model.userData.offsetQuaternion);
+            } else {
+                model.quaternion.copy(poseQuat);
+            }
+
+            // Actualizar posición (usar set para evitar problemas con objetos no-THREE)
+            model.position.set(
+                pose1.transform.position.x,
+                pose1.transform.position.y,
+                pose1.transform.position.z
+            );
+        }
+    }
+}
 
 // === Render loop básico ===
 function render() {
