@@ -31,53 +31,47 @@ let planetColors = [
 // === Crear modelos y QR ===
 let fontLoader = new THREE.FontLoader();
 fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
-    for (let i in planets) {
-        let planetName = planets[i];
-        let el = document.createElement('div');
-        el.id = 'qr' + planetName;
+    // ...dentro del fontLoader.load(...)
+for (let i in planets) {
+  let planetName = planets[i];
+  let el = document.createElement('div');
+  el.id = 'qr' + planetName;
 
-        // Crear texto 3D
-        let textGeometry = new THREE.TextGeometry(planetName.toUpperCase(), {
-            font: font,
-            size: 0.05,
-            height: 0.01,
-            curveSegments: 12,
-        });
-        textGeometry.computeBoundingBox();
+  let textGeometry = new THREE.TextGeometry(planetName.toUpperCase(), {
+    font: font,
+    size: 0.05,
+    height: 0.01,
+    curveSegments: 12,
+  });
+  textGeometry.computeBoundingBox();
 
-        // Centrar el texto
-        const centerOffsetX = -0.5 * (textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x);
-        const centerOffsetY = -0.5 * (textGeometry.boundingBox.max.y - textGeometry.boundingBox.min.y);
-        const centerOffsetZ = -0.5 * (textGeometry.boundingBox.max.z - textGeometry.boundingBox.min.z);
-        textGeometry.translate(centerOffsetX, centerOffsetY, centerOffsetZ);
+  // centrar el texto
+  const centerOffsetX = -0.5 * (textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x);
+  const centerOffsetY = -0.5 * (textGeometry.boundingBox.max.y - textGeometry.boundingBox.min.y);
+  const centerOffsetZ = -0.5 * (textGeometry.boundingBox.max.z - textGeometry.boundingBox.min.z);
+  textGeometry.translate(centerOffsetX, centerOffsetY, centerOffsetZ);
 
-        // Material y mesh
-        let textMaterial = new THREE.MeshStandardMaterial({ color: planetColors[i] });
-        let textMesh = new THREE.Mesh(textGeometry, textMaterial);
+  let textMaterial = new THREE.MeshStandardMaterial({ color: planetColors[i] });
+  let textMesh = new THREE.Mesh(textGeometry, textMaterial);
 
-        // Crear un grupo para manipular la rotación correctamente
-        let textGroup = new THREE.Group();
-        textGroup.add(textMesh);
-        textGroup.position.y = 0.02; // elevar un poco el texto
+  // Crear grupo contenedor
+  let textGroup = new THREE.Group();
+  textGroup.add(textMesh);
 
-        // === Definir rotación como quaternion offset ===
-        // Queremos que esté echado sobre el plano
-        let offsetEuler = new THREE.Euler(-Math.PI / 2, 0, 0, 'XYZ');
-        let offsetQuaternion = new THREE.Quaternion().setFromEuler(offsetEuler);
+  // 💡 Hacer que el texto esté “echado” (tumbado sobre el QR)
+  textGroup.rotation.x = -Math.PI / 2; // rotarlo 90° hacia adelante
+  textGroup.position.y = 0.01; // elevarlo un poco sobre el QR
 
-        // Guardar el offset en userData para aplicarlo en onXRFrame
-        textGroup.userData.offsetQuaternion = offsetQuaternion;
+  // Guardar modelo
+  models[i] = textGroup;
 
-        // Guardar modelo
-        models[i] = textGroup;
-
-        // === Generar QR e imagen rastreable ===
-        qrcodes[planetName] = (new QRCode(el, planetName))._oDrawing._elCanvas;
-        createImageBitmap(qrcodes[planetName]).then((x) => {
-            bitmaps[planetName] = x;
-            trackableImages[i] = { image: x, widthInMeters: 0.1 };
-        });
-    }
+  // === Generar QR e imagen rastreable ===
+  qrcodes[planetName] = (new QRCode(el, planetName))._oDrawing._elCanvas;
+  createImageBitmap(qrcodes[planetName]).then((x) => {
+    bitmaps[planetName] = x;
+    trackableImages[i] = { image: x, widthInMeters: 0.1 };
+  });
+}
 });
 
 
