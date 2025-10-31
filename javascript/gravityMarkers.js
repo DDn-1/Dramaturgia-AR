@@ -79,6 +79,7 @@ fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.
 
             let textMaterial = new THREE.MeshStandardMaterial({ color: planetColors[i] });
             let textMesh = new THREE.Mesh(lineGeometry, textMaterial);
+            textMesh.rotation.x = -Math.PI / 2;
 
             // Posicionar las líneas una debajo de otra
             textMesh.position.y = -(j * lineSpacing);
