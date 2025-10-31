@@ -58,17 +58,13 @@ fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.
         // Crear un grupo para manipular la rotación correctamente
         let textGroup = new THREE.Group();
         textGroup.add(textMesh);
-        textGroup.position.y = 0.02; // elevar un poco el texto
 
-        // === Definir rotación como quaternion offset ===
-        // Queremos que esté echado sobre el plano
-        let offsetEuler = new THREE.Euler(-Math.PI / 2, 0, 0, 'XYZ');
-        let offsetQuaternion = new THREE.Quaternion().setFromEuler(offsetEuler);
+        // Rotar el grupo (no el texto directamente)
+        textGroup.rotation.x = -Math.PI / 2; // lo echamos sobre el plano
+        textGroup.rotation.y = -Math.PI / 2;
+        textGroup.rotation.z = -Math.PI / 2;
+        textGroup.position.y = 0.02; // elevar un poco el texto para que no se meta en el suelo
 
-        // Guardar el offset en userData para aplicarlo en onXRFrame
-        textGroup.userData.offsetQuaternion = offsetQuaternion;
-
-        // Guardar modelo
         models[i] = textGroup;
 
         // === Generar QR e imagen rastreable ===
@@ -79,7 +75,6 @@ fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.
         });
     }
 });
-
 
 // === Escena ===
 let camera, scene, renderer, xrRefSpace, gl;
