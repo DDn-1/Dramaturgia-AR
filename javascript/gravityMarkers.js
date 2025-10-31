@@ -9,7 +9,7 @@ let planets = [
     'La piel escribe la historia de los días.',
     'Los huesos sostienen el peso de los años.',
     'El pulso mide la distancia entre pasado y futuro.',
-    'La respiracion traduce el paso del tiempo en vida.',
+    'La respiración traduce el paso del tiempo en vida.',
     'El cuerpo anuncia lo que el alma aún ignora.',
     'La carne recuerda lo que la mente olvida.',
     'El movimiento revela los secretos del devenir.',
@@ -79,7 +79,7 @@ fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.
 
             let textMaterial = new THREE.MeshStandardMaterial({ color: planetColors[i] });
             let textMesh = new THREE.Mesh(lineGeometry, textMaterial);
-            textMesh.rotation.x = -Math.PI / 2;
+            textMesh.rotation.z = -Math.PI / 2;
 
             // Posicionar las líneas una debajo de otra
             textMesh.position.y = -(j * lineSpacing);
@@ -89,8 +89,8 @@ fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.
         }
 
         // Acostar todo el grupo
-        textGroup.rotation.x = -Math.PI / 2;
         textGroup.position.y = 0.02;
+        textGroup.rotation.x = -Math.PI / 2;
 
         // Guardar rotación offset (por si se usa en onXRFrame)
         let offsetEuler = new THREE.Euler(Math.PI, 0, 0, 'XYZ');
