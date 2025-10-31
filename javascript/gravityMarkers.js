@@ -44,7 +44,7 @@ fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.
         });
         textGeometry.computeBoundingBox();
 
-        // Centrar el texto
+        // Centrar el texto (mover la geometría al origen)
         const centerOffsetX = -0.5 * (textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x);
         const centerOffsetY = -0.5 * (textGeometry.boundingBox.max.y - textGeometry.boundingBox.min.y);
         const centerOffsetZ = -0.5 * (textGeometry.boundingBox.max.z - textGeometry.boundingBox.min.z);
@@ -54,15 +54,20 @@ fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.
         let textMaterial = new THREE.MeshStandardMaterial({ color: planetColors[i] });
         let textMesh = new THREE.Mesh(textGeometry, textMaterial);
 
-        // Crear un grupo para manipular la rotación correctamente
+        // Crear un grupo y añadir el mesh
         let textGroup = new THREE.Group();
         textGroup.add(textMesh);
 
-        // Rotar el grupo (no el texto directamente)
-        textGroup.rotation.x = -Math.PI / 2; // lo echamos sobre el plano
-        textGroup.rotation.y = -Math.PI / 2; // lo echamos sobre el plano
-        textGroup.rotation.z = -Math.PI / 2; // lo echamos sobre el plano
-        textGroup.position.y = 0.02; // elevar un poco el texto para que no se meta en el suelo
+        // ya no rotamos aquí con rotation.x = ... (lo haremos con offset quaternion)
+        textGroup.position.y = 0.02; // separación sobre el marcador
+
+        // Creamos y guardamos un offset quaternion que representa "texto echado"
+        // aquí definimos que queremos rotar -90° en X para dejar el texto "echado"
+        const offsetEuler = new THREE.Euler(-Math.PI / 2, 0, 0, 'XYZ');
+        const offsetQ = new THREE.Quaternion().setFromEuler(offsetEuler);
+
+        // Guardamos el offset en userData para usarlo en el frame loop
+        textGroup.userData = { offsetQuaternion: offsetQ };
 
         models[i] = textGroup;
 
@@ -77,6 +82,7 @@ fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.
         });
     }
 });
+
 
 // === Escena ===
 let camera, scene, renderer, xrRefSpace, gl;
@@ -182,7 +188,33 @@ function onXRFrame(t, frame) {
                     scene.add(model);
                 }
                 model.position.copy(pos);
-                model.quaternion.copy(quat);
+                // dentro de tu loop de results en onXRFrame:
+                let model = models[imageIndex];
+                if (!scene.children.includes(model)) {
+                    scene.add(model);
+                }
+                
+                // convertimos el quat recibido (DOM) a THREE.Quaternion
+                const poseQuat = new THREE.Quaternion(pose1.transform.orientation.x,
+                                                      pose1.transform.orientation.y,
+                                                      pose1.transform.orientation.z,
+                                                      pose1.transform.orientation.w);
+                
+                // Ahora aplicamos la orientación del marcador y luego multiplicamos por el offset
+                // para "acostar" el texto relativa a la orientación del marcador.
+                if (model && model.userData && model.userData.offsetQuaternion) {
+                    // Queremos: finalQuat = poseQuat * offsetQ
+                    // En Three.js: final.copy(poseQuat).multiply(offsetQ)
+                    model.quaternion.copy(poseQuat).multiply(model.userData.offsetQuaternion);
+                } else {
+                    model.quaternion.copy(poseQuat);
+                }
+                
+                // posición (usar set para robustez)
+                model.position.set(pose1.transform.position.x,
+                                   pose1.transform.position.y,
+                                   pose1.transform.position.z);
+
             }
         }
     }
