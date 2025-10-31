@@ -28,26 +28,42 @@ let planetColors = [
 ];
 
 // === Crear modelos y QR ===
-for (let i in planets) {
-    let planetName = planets[i];
-    let el = document.createElement('div');
-    el.id = 'qr' + planetName;
+let fontLoader = new THREE.FontLoader();
+fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
+    for (let i in planets) {
+        let planetName = planets[i];
+        let el = document.createElement('div');
+        el.id = 'qr' + planetName;
 
-    let geometry = new THREE.SphereGeometry(0.05, 32, 16);
-    let material = new THREE.MeshStandardMaterial({ color: planetColors[i] });
-    let sphere = new THREE.Mesh(geometry, material);
+        // Crear texto 3D con el nombre completo del planeta
+        let textGeometry = new THREE.TextGeometry(planetName.toUpperCase(), {
+            font: font,
+            size: 0.05,
+            height: 0.01,
+            curveSegments: 12,
+        });
+        let textMaterial = new THREE.MeshStandardMaterial({ color: planetColors[i] });
+        let textMesh = new THREE.Mesh(textGeometry, textMaterial);
 
-    // Generar QR e imagen rastreable
-    qrcodes[planetName] = (new QRCode(el, planetName))._oDrawing._elCanvas;
-    createImageBitmap(qrcodes[planetName]).then((x) => {
-        bitmaps[planetName] = x;
-        trackableImages[i] = {
-            image: x,
-            widthInMeters: 0.1
-        };
-    });
-    models[i] = sphere;
-}
+        // Centrar el texto y ponerlo echado (rotado)
+        textGeometry.computeBoundingBox();
+        let centerOffset = -0.5 * (textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x);
+        textMesh.position.set(centerOffset, 0, 0);
+        textMesh.rotation.x = -Math.PI / 2; // lo echamos sobre el plano
+        models[i] = textMesh;
+
+        // Generar QR e imagen rastreable
+        qrcodes[planetName] = (new QRCode(el, planetName))._oDrawing._elCanvas;
+        createImageBitmap(qrcodes[planetName]).then((x) => {
+            bitmaps[planetName] = x;
+            trackableImages[i] = {
+                image: x,
+                widthInMeters: 0.1
+            };
+        });
+    }
+});
+
 
 // === Escena ===
 let camera, scene, renderer, xrRefSpace, gl;
