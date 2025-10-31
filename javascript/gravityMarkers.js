@@ -180,33 +180,15 @@ function onXRFrame(t, frame) {
                 const pose1 = frame.getPose(result.imageSpace, xrRefSpace);
                 if (!pose1) continue;
 
-                // Obtenemos el modelo correspondiente
+                const pos = pose1.transform.position;
+                const quat = pose1.transform.orientation;
+
                 let model = models[imageIndex];
                 if (!scene.children.includes(model)) {
                     scene.add(model);
                 }
-
-                // Quaternion del marcador (pose del frame)
-                const poseQuat = new THREE.Quaternion(
-                    pose1.transform.orientation.x,
-                    pose1.transform.orientation.y,
-                    pose1.transform.orientation.z,
-                    pose1.transform.orientation.w
-                );
-
-                // Aplicamos la orientación del marcador + offset para acostar el texto
-                if (model && model.userData && model.userData.offsetQuaternion) {
-                    model.quaternion.copy(poseQuat).multiply(model.userData.offsetQuaternion);
-                } else {
-                    model.quaternion.copy(poseQuat);
-                }
-
-                // Actualizamos la posición del modelo
-                model.position.set(
-                    pose1.transform.position.x,
-                    pose1.transform.position.y,
-                    pose1.transform.position.z
-                );
+                model.position.copy(pos);
+                model.quaternion.copy(quat);
             }
         }
     }
