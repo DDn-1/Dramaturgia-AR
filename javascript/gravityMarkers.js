@@ -1,6 +1,6 @@
-let trackableImages = new Array(9);
+let trackableImages = new Array(10);
 let qrcodes = {};
-let models = new Array(9);
+let models = new Array(10);
 let bitmaps = {};
 let includedModels = [];
 
@@ -13,7 +13,8 @@ let planets = [
     'jupiter',
     'neptune',
     'uranus',
-    'saturn'
+    'saturn',
+    'pluto' // opcional si querés tener 10 exactos
 ];
 let planetColors = [
     0xfefe99,
@@ -24,18 +25,19 @@ let planetColors = [
     0xc0c0b0,
     0xe0c0b0,
     0x40c0e0,
-    0x20c0fe
+    0x20c0fe,
+    0xcccccc
 ];
 
-// === Crear modelos y QR ===
+// === Crear modelos y QRs ===
 let fontLoader = new THREE.FontLoader();
 fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
-    for (let i in planets) {
+    for (let i = 0; i < planets.length; i++) {
         let planetName = planets[i];
         let el = document.createElement('div');
-        el.id = 'qr' + planetName;
+        el.id = 'qr' + i; // el id del QR se basa en el número
 
-        // Crear texto 3D
+        // === Crear texto 3D con el nombre del planeta ===
         let textGeometry = new THREE.TextGeometry(planetName.toUpperCase(), {
             font: font,
             size: 0.05,
@@ -53,32 +55,32 @@ fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.
         // Material y mesh
         let textMaterial = new THREE.MeshStandardMaterial({ color: planetColors[i] });
         let textMesh = new THREE.Mesh(textGeometry, textMaterial);
-        textMesh.rotation.x = -Math.PI / 2;
-        // Crear un grupo para manipular la rotación correctamente
+        textMesh.rotation.x = -Math.PI / 2; // acostar texto
+
+        // Agrupar y rotar
         let textGroup = new THREE.Group();
         textGroup.add(textMesh);
-        textGroup.position.y = 0.02; // elevar un poco el texto
+        textGroup.position.y = 0.02;
 
-        // === Definir rotación como quaternion offset ===
-        // Queremos que esté echado sobre el plano
+        // Definir rotación "echada" como offset
         let offsetEuler = new THREE.Euler(Math.PI, 0, 0, 'XYZ');
         let offsetQuaternion = new THREE.Quaternion().setFromEuler(offsetEuler);
-
-        // Guardar el offset en userData para aplicarlo en onXRFrame
         textGroup.userData.offsetQuaternion = offsetQuaternion;
 
-        // Guardar modelo
+        // Guardar el modelo
         models[i] = textGroup;
 
-        // === Generar QR e imagen rastreable ===
-        qrcodes[planetName] = (new QRCode(el, planetName))._oDrawing._elCanvas;
-        createImageBitmap(qrcodes[planetName]).then((x) => {
-            bitmaps[planetName] = x;
+        // === Generar QR basado en número ===
+        let qrNumber = i.toString();
+        qrcodes[qrNumber] = (new QRCode(el, qrNumber))._oDrawing._elCanvas;
+
+        // Crear imagen rastreable
+        createImageBitmap(qrcodes[qrNumber]).then((x) => {
+            bitmaps[qrNumber] = x;
             trackableImages[i] = { image: x, widthInMeters: 0.1 };
         });
     }
 });
-
 
 
 // === Escena ===
