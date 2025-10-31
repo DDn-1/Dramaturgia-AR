@@ -35,34 +35,50 @@ fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.
         let el = document.createElement('div');
         el.id = 'qr' + planetName;
 
-        // Crear texto 3D con el nombre completo del planeta
+        // Crear texto 3D
         let textGeometry = new THREE.TextGeometry(planetName.toUpperCase(), {
             font: font,
             size: 0.05,
             height: 0.01,
             curveSegments: 12,
         });
+        textGeometry.computeBoundingBox();
+
+        // Centrar el texto
+        const centerOffsetX = -0.5 * (textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x);
+        const centerOffsetY = -0.5 * (textGeometry.boundingBox.max.y - textGeometry.boundingBox.min.y);
+        const centerOffsetZ = -0.5 * (textGeometry.boundingBox.max.z - textGeometry.boundingBox.min.z);
+        textGeometry.translate(centerOffsetX, centerOffsetY, centerOffsetZ);
+
+        // Material y mesh
         let textMaterial = new THREE.MeshStandardMaterial({ color: planetColors[i] });
         let textMesh = new THREE.Mesh(textGeometry, textMaterial);
 
-        // Centrar el texto y ponerlo echado (rotado)
-        textGeometry.computeBoundingBox();
-        let centerOffset = -0.5 * (textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x);
-        textMesh.position.set(centerOffset, 0, 0);
-        textMesh.rotation.x = -Math.PI / 2; // lo echamos sobre el plano
-        models[i] = textMesh;
+        // Crear un grupo para manipular la rotación correctamente
+        let textGroup = new THREE.Group();
+        textGroup.add(textMesh);
+        textGroup.position.y = 0.02; // elevar un poco el texto
 
-        // Generar QR e imagen rastreable
+        // === Definir rotación como quaternion offset ===
+        // Queremos que esté echado sobre el plano
+        let offsetEuler = new THREE.Euler(-Math.PI / 2, 0, 0, 'XYZ');
+        let offsetQuaternion = new THREE.Quaternion().setFromEuler(offsetEuler);
+
+        // Guardar el offset en userData para aplicarlo en onXRFrame
+        textGroup.userData.offsetQuaternion = offsetQuaternion;
+
+        // Guardar modelo
+        models[i] = textGroup;
+
+        // === Generar QR e imagen rastreable ===
         qrcodes[planetName] = (new QRCode(el, planetName))._oDrawing._elCanvas;
         createImageBitmap(qrcodes[planetName]).then((x) => {
             bitmaps[planetName] = x;
-            trackableImages[i] = {
-                image: x,
-                widthInMeters: 0.1
-            };
+            trackableImages[i] = { image: x, widthInMeters: 0.1 };
         });
     }
 });
+
 
 
 // === Escena ===
