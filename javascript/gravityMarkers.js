@@ -58,13 +58,17 @@ fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.
         // Crear un grupo para manipular la rotación correctamente
         let textGroup = new THREE.Group();
         textGroup.add(textMesh);
+        textGroup.position.y = 0.02; // elevar un poco el texto
 
-        // Rotar el grupo (no el texto directamente)
-        textGroup.rotation.x = -Math.PI / 2; // lo echamos sobre el plano
-        textGroup.rotation.y = -Math.PI / 2;
-        textGroup.rotation.z = -Math.PI / 2;
-        textGroup.position.y = 0.02; // elevar un poco el texto para que no se meta en el suelo
+        // === Definir rotación como quaternion offset ===
+        // Queremos que esté echado sobre el plano
+        let offsetEuler = new THREE.Euler(-Math.PI / 2, 0, 0, 'XYZ');
+        let offsetQuaternion = new THREE.Quaternion().setFromEuler(offsetEuler);
 
+        // Guardar el offset en userData para aplicarlo en onXRFrame
+        textGroup.userData.offsetQuaternion = offsetQuaternion;
+
+        // Guardar modelo
         models[i] = textGroup;
 
         // === Generar QR e imagen rastreable ===
@@ -75,6 +79,7 @@ fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.
         });
     }
 });
+
 
 // === Escena ===
 let camera, scene, renderer, xrRefSpace, gl;
@@ -154,39 +159,7 @@ function AR() {
     }
 }
 
-function onXRFrame(t, frame) {
-    const session = frame.session;
-    session.requestAnimationFrame(onXRFrame);
-    const baseLayer = session.renderState.baseLayer;
-    const pose = frame.getViewerPose(xrRefSpace);
 
-    renderer.render(scene, camera);
-
-    if (pose) {
-        for (const view of pose.views) {
-            const viewport = baseLayer.getViewport(view);
-            gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
-
-            const results = frame.getImageTrackingResults();
-            for (const result of results) {
-                const imageIndex = result.index;
-                const pose1 = frame.getPose(result.imageSpace, xrRefSpace);
-                if (!pose1) continue;
-
-                const pos = pose1.transform.position;
-                const quat = pose1.transform.orientation;
-
-                let model = models[imageIndex];
-                if (!scene.children.includes(model)) {
-                    scene.add(model);
-                }
-
-                model.position.copy(pos);
-                model.quaternion.copy(quat);
-            }
-        }
-    }
-}
 
 // === Render loop básico ===
 function render() {
