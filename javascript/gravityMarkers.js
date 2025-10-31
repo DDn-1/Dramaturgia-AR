@@ -158,16 +158,7 @@ function AR() {
     }
 }
 
-function onXRFrame(t, frame) {
-    const session = frame.session;
-    session.requestAnimationFrame(onXRFrame);
-    const baseLayer = session.renderState.baseLayer;
-    const pose = frame.getViewerPose(xrRefSpace);
 
-    renderer.render(scene, camera);
-
-
-}
 
 // === Render loop básico ===
 function render() {
