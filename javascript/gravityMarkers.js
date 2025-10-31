@@ -154,7 +154,39 @@ function AR() {
     }
 }
 
+function onXRFrame(t, frame) {
+    const session = frame.session;
+    session.requestAnimationFrame(onXRFrame);
+    const baseLayer = session.renderState.baseLayer;
+    const pose = frame.getViewerPose(xrRefSpace);
 
+    renderer.render(scene, camera);
+
+    if (pose) {
+        for (const view of pose.views) {
+            const viewport = baseLayer.getViewport(view);
+            gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
+
+            const results = frame.getImageTrackingResults();
+            for (const result of results) {
+                const imageIndex = result.index;
+                const pose1 = frame.getPose(result.imageSpace, xrRefSpace);
+                if (!pose1) continue;
+
+                const pos = pose1.transform.position;
+                const quat = pose1.transform.orientation;
+
+                let model = models[imageIndex];
+                if (!scene.children.includes(model)) {
+                    scene.add(model);
+                }
+
+                model.position.copy(pos);
+                model.quaternion.copy(quat);
+            }
+        }
+    }
+}
 
 // === Render loop básico ===
 function render() {
