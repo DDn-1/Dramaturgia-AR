@@ -62,8 +62,6 @@ fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.
 
         // === Definir rotación como quaternion offset ===
         // Queremos que esté echado sobre el plano
-        let offsetEuler = new THREE.Euler(-Math.PI / 2, 0, 0, 'XYZ');
-        let offsetQuaternion = new THREE.Quaternion().setFromEuler(offsetEuler);
 
         // Guardar el offset en userData para aplicarlo en onXRFrame
         textGroup.userData.offsetQuaternion = offsetQuaternion;
