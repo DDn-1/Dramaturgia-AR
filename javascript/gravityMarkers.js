@@ -15,6 +15,7 @@ let planets = [
     'uranus',
     'saturn'
 ];
+
 let planetColors = [
     0xfefe99,
     0xfecc77,
@@ -44,7 +45,7 @@ fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.
         });
         textGeometry.computeBoundingBox();
 
-        // Centrar el texto (mover la geometría al origen)
+        // Centrar el texto
         const centerOffsetX = -0.5 * (textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x);
         const centerOffsetY = -0.5 * (textGeometry.boundingBox.max.y - textGeometry.boundingBox.min.y);
         const centerOffsetZ = -0.5 * (textGeometry.boundingBox.max.z - textGeometry.boundingBox.min.z);
@@ -54,20 +55,15 @@ fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.
         let textMaterial = new THREE.MeshStandardMaterial({ color: planetColors[i] });
         let textMesh = new THREE.Mesh(textGeometry, textMaterial);
 
-        // Crear un grupo y añadir el mesh
+        // Crear un grupo para manipular la rotación correctamente
         let textGroup = new THREE.Group();
         textGroup.add(textMesh);
 
-        // ya no rotamos aquí con rotation.x = ... (lo haremos con offset quaternion)
-        textGroup.position.y = 0.02; // separación sobre el marcador
-
-        // Creamos y guardamos un offset quaternion que representa "texto echado"
-        // aquí definimos que queremos rotar -90° en X para dejar el texto "echado"
-        const offsetEuler = new THREE.Euler(-Math.PI / 2, 0, 0, 'XYZ');
-        const offsetQ = new THREE.Quaternion().setFromEuler(offsetEuler);
-
-        // Guardamos el offset en userData para usarlo en el frame loop
-        textGroup.userData = { offsetQuaternion: offsetQ };
+        // Rotar el grupo (no el texto directamente)
+        textGroup.rotation.x = -Math.PI / 2; // lo echamos sobre el plano
+        textGroup.rotation.y = -Math.PI / 2;
+        textGroup.rotation.z = -Math.PI / 2;
+        textGroup.position.y = 0.02; // elevar un poco el texto para que no se meta en el suelo
 
         models[i] = textGroup;
 
@@ -75,18 +71,13 @@ fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.
         qrcodes[planetName] = (new QRCode(el, planetName))._oDrawing._elCanvas;
         createImageBitmap(qrcodes[planetName]).then((x) => {
             bitmaps[planetName] = x;
-            trackableImages[i] = {
-                image: x,
-                widthInMeters: 0.1
-            };
+            trackableImages[i] = { image: x, widthInMeters: 0.1 };
         });
     }
 });
 
-
 // === Escena ===
 let camera, scene, renderer, xrRefSpace, gl;
-
 scene = new THREE.Scene();
 scene.add(new THREE.AmbientLight(0x222222));
 
@@ -95,6 +86,7 @@ dirLight.position.set(0.9, 1, 0.6).normalize();
 scene.add(dirLight);
 
 camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 20000);
+
 renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -133,6 +125,7 @@ function AR() {
         gl = renderer.getContext();
         button.textContent = 'EXIT AR';
         currentSession = session;
+
         session.requestReferenceSpace('local').then((refSpace) => {
             xrRefSpace = refSpace;
             session.requestAnimationFrame(onXRFrame);
@@ -187,13 +180,13 @@ function onXRFrame(t, frame) {
                 if (!scene.children.includes(model)) {
                     scene.add(model);
                 }
+
                 model.position.copy(pos);
                 model.quaternion.copy(quat);
             }
         }
     }
 }
-
 
 // === Render loop básico ===
 function render() {
