@@ -9,7 +9,7 @@ let planets = [
     'La piel escribe la historia de los días.',
     'Los huesos sostienen el peso de los años.',
     'El pulso mide la distancia entre pasado y futuro.',
-    'La respiración traduce el paso del tiempo en vida.',
+    'La respiracion traduce el paso del tiempo en vida.',
     'El cuerpo anuncia lo que el alma aún ignora.',
     'La carne recuerda lo que la mente olvida.',
     'El movimiento revela los secretos del devenir.',
@@ -83,6 +83,7 @@ fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.
 
             // Posicionar las líneas una debajo de otra
             textMesh.position.y = -(j * lineSpacing);
+            textMesh.rotation.x = -Math.PI / 2;
 
             textGroup.add(textMesh);
         }
