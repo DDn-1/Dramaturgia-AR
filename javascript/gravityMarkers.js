@@ -1,124 +1,72 @@
-let trackableImages = new Array(10);
-let qrcodes = {};
-let models = new Array(10);
-let bitmaps = {};
-let includedModels = [];
-
-let planets = [
-    'El cuerpo guarda la memoria del tiempo.',
-    'La piel escribe la historia de los días.',
-    'Los huesos sostienen el peso de los años.',
-    'El pulso mide la distancia entre pasado y futuro.',
-    'La respiración traduce el paso del tiempo en vida.',
-    'El cuerpo anuncia lo que el alma aún ignora.',
-    'La carne recuerda lo que la mente olvida.',
-    'El movimiento revela los secretos del devenir.',
-    'El cuerpo predice el destino con su propio ritmo.',
-    'La piel escucha el lenguaje oculto del tiempo.'
-];
-
-let planetColors = [
-    0xfefe99,
-    0xfecc77,
-    0xe066e0,
-    0x66c9fe,
-    0xfe66e0,
-    0xc0c0b0,
-    0xe0c0b0,
-    0x40c0e0,
-    0x20c0fe,
-    0xcccccc
-];
-
-// === Agrupar las frases de a 3 ===
-let groupedTexts = [];
-for (let i = 0; i < planets.length; i += 3) {
-    groupedTexts.push(planets.slice(i, i + 3));
-}
-
 // === Crear modelos y QRs ===
 let fontLoader = new THREE.FontLoader();
 fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
-    for (let i = 0; i < groupedTexts.length; i++) {
+    for (let i = 0; i < planets.length; i++) {
+        let planetText = planets[i]; // puede tener varias palabras
         let el = document.createElement('div');
         el.id = 'qr' + i; // QR basado en número
 
-        // === Grupo principal (para las 3 frases) ===
+        // ======= Dividir texto largo en líneas =======
+        const maxCharsPerLine = 20;
+        const words = planetText.split(" ");
+        let lines = [];
+        let currentLine = "";
+
+        for (let w of words) {
+            if ((currentLine + " " + w).trim().length > maxCharsPerLine) {
+                lines.push(currentLine.trim());
+                currentLine = w;
+            } else {
+                currentLine += " " + w;
+            }
+        }
+        if (currentLine.trim().length > 0) lines.push(currentLine.trim());
+
+        // ======= Ajustar tamaño según cantidad de líneas =======
+        let textSize = 0.05;
+        if (lines.length === 2) textSize = 0.04;
+        else if (lines.length >= 3) textSize = 0.03;
+
+        // ======= Crear grupo para todas las líneas =======
         let textGroup = new THREE.Group();
+        const lineSpacing = 0.07; // distancia entre líneas
 
-        // Posiciones X para izquierda, centro, derecha
-        let xPositions = [-0.15, 0, 0.15];
+        for (let j = 0; j < lines.length; j++) {
+            let lineGeometry = new THREE.TextGeometry(lines[j].toUpperCase(), {
+                font: font,
+                size: textSize,
+                height: 0.008,
+                curveSegments: 12,
+            });
+            lineGeometry.computeBoundingBox();
 
-        for (let j = 0; j < groupedTexts[i].length; j++) {
-            let planetText = groupedTexts[i][j];
-            let colorIndex = i * 3 + j; // usar color distinto por frase
+            // Centrar cada línea
+            const centerOffsetX = -0.5 * (lineGeometry.boundingBox.max.x - lineGeometry.boundingBox.min.x);
+            const centerOffsetY = -0.5 * (lineGeometry.boundingBox.max.y - lineGeometry.boundingBox.min.y);
+            lineGeometry.translate(centerOffsetX, centerOffsetY, 0);
 
-            // === Dividir texto largo en líneas ===
-            const maxCharsPerLine = 20;
-            const words = planetText.split(" ");
-            let lines = [];
-            let currentLine = "";
+            let textMaterial = new THREE.MeshStandardMaterial({ color: planetColors[i] });
+            let textMesh = new THREE.Mesh(lineGeometry, textMaterial);
 
-            for (let w of words) {
-                if ((currentLine + " " + w).trim().length > maxCharsPerLine) {
-                    lines.push(currentLine.trim());
-                    currentLine = w;
-                } else {
-                    currentLine += " " + w;
-                }
-            }
-            if (currentLine.trim().length > 0) lines.push(currentLine.trim());
+            // Posicionar las líneas una debajo de otra
+            textMesh.position.z = (j * lineSpacing);
+            textMesh.rotation.x = -Math.PI / 2;
 
-            // === Ajustar tamaño del texto según número de líneas ===
-            let textSize = 0.045;
-            if (lines.length === 2) textSize = 0.04;
-            else if (lines.length >= 3) textSize = 0.03;
-
-            // === Crear subgrupo para las líneas de una frase ===
-            let phraseGroup = new THREE.Group();
-            const lineSpacing = 0.06;
-
-            for (let k = 0; k < lines.length; k++) {
-                let lineGeometry = new THREE.TextGeometry(lines[k].toUpperCase(), {
-                    font: font,
-                    size: textSize,
-                    height: 0.008,
-                    curveSegments: 12,
-                });
-                lineGeometry.computeBoundingBox();
-
-                const centerOffsetX = -0.5 * (lineGeometry.boundingBox.max.x - lineGeometry.boundingBox.min.x);
-                const centerOffsetY = -0.5 * (lineGeometry.boundingBox.max.y - lineGeometry.boundingBox.min.y);
-                lineGeometry.translate(centerOffsetX, centerOffsetY, 0);
-
-                let textMaterial = new THREE.MeshStandardMaterial({ color: planetColors[colorIndex] || 0xffffff });
-                let textMesh = new THREE.Mesh(lineGeometry, textMaterial);
-
-                // Colocar las líneas una debajo de otra
-                textMesh.position.z = k * lineSpacing;
-                textMesh.rotation.x = -Math.PI / 2;
-
-                phraseGroup.add(textMesh);
-            }
-
-            // === Posicionar cada frase (izquierda, centro, derecha) ===
-            phraseGroup.position.x = xPositions[j];
-            phraseGroup.position.y = 0.02;
-
-            textGroup.add(phraseGroup);
+            textGroup.add(textMesh);
         }
 
-        // Acostar el grupo principal
+        // Acostar todo el grupo
+        textGroup.position.y = 0.02;
         textGroup.rotation.x = -Math.PI / 2;
 
-        // Guardar rotación offset (por compatibilidad)
+        // Guardar rotación offset (por si se usa en onXRFrame)
         let offsetEuler = new THREE.Euler(Math.PI, 0, 0, 'XYZ');
         let offsetQuaternion = new THREE.Quaternion().setFromEuler(offsetEuler);
         textGroup.userData.offsetQuaternion = offsetQuaternion;
 
         models[i] = textGroup;
 
-        // === Generar QR ===
+        // === Generar QR basado en número ===
         let qrNumber = i.toString();
         qrcodes[qrNumber] = (new QRCode(el, qrNumber))._oDrawing._elCanvas;
 
@@ -128,7 +76,6 @@ fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.
         });
     }
 });
-
 
 
 
