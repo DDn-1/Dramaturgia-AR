@@ -195,12 +195,14 @@ function onXRFrame(t, frame) {
     const pose = frame.getViewerPose(xrRefSpace);
 
     renderer.render(scene, camera);
-        if (pose) {
+
+    if (pose) {
         for (const view of pose.views) {
             const viewport = baseLayer.getViewport(view);
             gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
 
             const results = frame.getImageTrackingResults();
+
             for (const result of results) {
                 const imageIndex = result.index;
                 const pose1 = frame.getPose(result.imageSpace, xrRefSpace);
@@ -209,17 +211,34 @@ function onXRFrame(t, frame) {
                 const pos = pose1.transform.position;
                 const quat = pose1.transform.orientation;
 
-                let model = models[imageIndex];
-                if (!scene.children.includes(model)) {
-                    scene.add(model);
+                // 🔹 Determinar qué tres modelos corresponden a este QR
+                // (QR 0 → frases 0,1,2 / QR 1 → 3,4,5 / QR 2 → 6,7,8)
+                const startIndex = imageIndex * 3;
+                const endIndex = startIndex + 3;
+
+                for (let i = startIndex; i < endIndex; i++) {
+                    const model = models[i];
+                    if (!model) continue; // por si no hay suficientes modelos
+
+                    // Añadir al escenario si no está aún
+                    if (!scene.children.includes(model)) {
+                        scene.add(model);
+                    }
+
+                    // 🔸 Copiar la posición y orientación del QR detectado
+                    model.position.copy(pos);
+                    model.quaternion.copy(quat);
+
+                    // 🔸 Separar visualmente las frases
+                    const offset = (i - startIndex - 1) * 0.08; 
+                    // esto da -0.08, 0, +0.08 para izquierda, centro, derecha
+                    model.position.x += offset;
                 }
-                model.position.copy(pos);
-                model.quaternion.copy(quat);
             }
         }
     }
-
 }
+
 
 // === Render loop básico ===
 function render() {
