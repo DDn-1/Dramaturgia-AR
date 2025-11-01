@@ -230,7 +230,7 @@ function onXRFrame(t, frame) {
                     model.quaternion.copy(quat);
 
                     // 🔸 Separar visualmente las frases
-                    const offset = (i - startIndex - 1) * 0.08; 
+                    const offset = (i - startIndex - 1) * 0.5; 
                     // esto da -0.08, 0, +0.08 para izquierda, centro, derecha
                     model.position.x += offset;
                 }
